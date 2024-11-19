@@ -123,6 +123,7 @@ class Game:
         if self.step & 1 == 1:
             self.board_generate_easy_block()
         self.board_check()
+        self.board_check_all_clear()
 
     def game_status(self):
         check_row = False
@@ -293,6 +294,18 @@ class Game:
                         self.board[row][index] = 3
                     case 2:
                         self.board[row][index] = 4
+                        
+    def board_check_all_clear(self):
+        """
+        判断整个棋盘是否清空，若清空则大量加分
+        """
+        check_all_clear = True
+        for col in range(self.board_size):
+            for row in range(self.board_size):
+                if self.board[row][col] in [1, 2]:
+                    check_all_clear = False
+        if check_all_clear:
+            self.score += 15
 
     def board_generate_easy_block(self, block_type=1):
         if len(self.player_move_history[2]) > 0:

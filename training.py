@@ -40,7 +40,6 @@ for episode in range(1000000):
         game.game_level()
         next_state = agent.multi_channel_divide(game.board, game.step)  # 环境返回下一个状态
         reward = game.game_reward()  # 环境返回奖励
-        # print(f'Step {step}: reward = {reward}')
         if game.game_status() == "over":
             done = True
 
@@ -96,5 +95,5 @@ for episode in range(1000000):
         plot_figure(test_total_step, 'test total step', 'epoch(per 500)', 'step', './results/test/total_step.png')
         plot_figure(test_valid_step_ratio, 'test valid step ratio', 'epoch(per 500)', 'step', './results/test/valid_step_ratio.png')
     
-    if episode % 10000 == 0 and episode > 0:
+    if episode % 0000 == 0 and episode > 0:
         agent.save_model(episode)

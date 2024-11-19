@@ -29,6 +29,7 @@ class GameGUI:
         # DQN Agent 初始化
         self.agent = DQNAgent(self.game.board_size, input_channels=7, action_size=4)
         self.agent.multi_channel_init(self.game.board_size, len(self.game.notion))
+        self.agent.load_model_test(140000, 0.05)
 
         # 状态
         self.running = False
@@ -138,9 +139,9 @@ class GameGUI:
         ).pack(padx=5)
         self.delay_slider = tk.Scale(
             self.agent_delay_frame,
-            from_=0.1,
-            to=2.0,
-            resolution=0.1,
+            from_=0.05,
+            to=1.0,
+            resolution=0.05,
             orient="horizontal",
             bg="#2b2b2b",
             fg="#ffffff",
@@ -305,6 +306,7 @@ class GameGUI:
             state = self.agent.multi_channel_divide(self.game.board, self.game.step)
             action = self.agent.select_action_test(state)
             self.game.game_step(self.action_num[int(action)])
+            self.game.game_level()
             self.log_action(self.action_num[int(action)])
             self.update_board()
             if self.game.game_status() == "over":

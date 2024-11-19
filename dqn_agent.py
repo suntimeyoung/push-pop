@@ -25,14 +25,17 @@ class ReplayBuffer:
 
 
 class DQNAgent:
-    def __init__(self, board_size, input_channels, action_size, gamma=0.95, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.05):
+    def __init__(self, board_size, input_channels, action_size, gamma=0.98, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.01):
         self.board_size = board_size
         self.action_size = action_size
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
-        self.device = torch.device('cuda:3')
+        if torch.cuda.device_count() > 3:
+            self.device = torch.device('cuda:3')
+        else:
+            self.device = torch.device('cuda:0')
 
         self.q_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
         self.target_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
@@ -61,7 +64,7 @@ class DQNAgent:
     def select_action_test(self, state):
         state_tensor = torch.FloatTensor(np.array(state)).to(self.device)
         with torch.no_grad():
-            q_values = self.q_network(state_tensor)
+            q_values = self.target_network(state_tensor)
         return torch.argmax(q_values).item()
 
     def remember(self, state, action, reward, next_state, done):
@@ -150,4 +153,8 @@ class DQNAgent:
         self.epsilon = epsilon
         self.target_network = torch.load(f"./results/models/target_network_episode_{episode}.pth")
         self.q_network = torch.load(f"./results/models/target_network_episode_{episode}.pth")
+        
+    def load_model_test(self, episode, epsilon):
+        self.epsilon = epsilon
+        self.target_network = torch.load(f"./results/models/target_network_episode_{episode}.pth", map_location=self.device)
         
