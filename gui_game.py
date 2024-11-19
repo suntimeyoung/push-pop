@@ -206,12 +206,12 @@ class GameGUI:
         self.score_label.config(text=f"Score: {self.game.score}")
         self.step_label.config(text=f"Step: {self.game.step}")
 
-    def log_action(self, action):
+    def log_action(self, action, role):
         """
-        记录 Agent 的操作
+        记录操作
         """
         self.log_text.config(state="normal")
-        message = f"[Step-{self.game.step}]: action {action}\n"
+        message = f"[{self.game.step}]: {role} {action}\n"
         self.log_text.config(width=max(self.log_text.cget("width"), len(message)))
         self.log_text.insert("end", message)
         self.log_text.see("end")
@@ -256,6 +256,7 @@ class GameGUI:
 
         if key in ["a", "w", "s", "d"]:
             self.game.game_step(key)
+            self.log_action(key, "player")
             self.game.game_level()
             self.update_board()
 
@@ -307,7 +308,7 @@ class GameGUI:
             action = self.agent.select_action_test(state)
             self.game.game_step(self.action_num[int(action)])
             self.game.game_level()
-            self.log_action(self.action_num[int(action)])
+            self.log_action(self.action_num[int(action)], 'agent')
             self.update_board()
             if self.game.game_status() == "over":
                 self.show_game_over()

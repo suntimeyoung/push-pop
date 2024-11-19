@@ -36,6 +36,7 @@ class DQNAgent:
             self.device = torch.device('cuda:3')
         else:
             self.device = torch.device('cuda:0')
+        self.device = torch.device('cpu')
 
         self.q_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
         self.target_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
