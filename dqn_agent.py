@@ -4,7 +4,7 @@ import torch.optim as optim
 import numpy as np
 import random
 
-from network.module import *
+from Network.module import *
 from utils.utils import plot_figure, plot_min_max_figure
 
 
@@ -25,15 +25,14 @@ class ReplayBuffer:
 
 
 class DQNAgent:
-    def __init__(self, board_size, input_channels, action_size, gamma=0.95, epsilon=1.0, epsilon_decay=0.9998, epsilon_min=0.01):
+    def __init__(self, board_size, input_channels, action_size, gamma=0.95, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.05):
         self.board_size = board_size
         self.action_size = action_size
         self.gamma = gamma
         self.epsilon = epsilon
         self.epsilon_decay = epsilon_decay
         self.epsilon_min = epsilon_min
-        self.device = torch.device('cuda')
-        self.epoch = 0
+        self.device = torch.device('cuda:3')
 
         self.q_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
         self.target_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
@@ -43,7 +42,7 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=0.001)
         self.criterion = nn.MSELoss()
 
-        self.memory = ReplayBuffer(capacity=10000)
+        self.memory = ReplayBuffer(capacity=50000)
 
         self.q_values_range_history_epsilon = {'min':[], 'max': []}
         self.loss_history_epsilon = []
@@ -54,13 +53,13 @@ class DQNAgent:
         if random.random() < self.epsilon:
             return random.randint(0, self.action_size - 1)
         else:
-            state_tensor = torch.FloatTensor(state).to(self.device)
+            state_tensor = torch.FloatTensor(np.array(state)).to(self.device)
             with torch.no_grad():
                 q_values = self.q_network(state_tensor)
             return torch.argmax(q_values).item()
-        
+    
     def select_action_test(self, state):
-        state_tensor = torch.FloatTensor(state).to(self.device)
+        state_tensor = torch.FloatTensor(np.array(state)).to(self.device)
         with torch.no_grad():
             q_values = self.q_network(state_tensor)
         return torch.argmax(q_values).item()
@@ -70,7 +69,7 @@ class DQNAgent:
         self.memory.push(transition)
 
     def replay(self, batch_size):
-        if len(self.memory.memory) < batch_size * 2:
+        if len(self.memory.memory) < batch_size * 10:
             return
 
         transitions = self.memory.sample(batch_size)
@@ -112,9 +111,6 @@ class DQNAgent:
 
     def decay_epsilon(self):
         self.epsilon = max(self.epsilon * self.epsilon_decay, self.epsilon_min)
-        # if self.epoch % 50 == 0:
-        #     print(self.epsilon)
-        self.epoch += 1
 
     def multi_channel_init(self, board_size, channel_num):
         self.board_size = board_size
@@ -144,5 +140,14 @@ class DQNAgent:
         return multi_channel_input
 
     def plot_q_loss(self):
-        plot_figure(self.loss_history, 'loss history', 'epoch', 'loss', './results/loss.png')
-        plot_min_max_figure(self.q_values_range_history['min'], self.q_values_range_history['max'], 'q_values', 'epoch', 'q_value', './results/q_values.png')
+        plot_figure(self.loss_history, 'loss history', 'epoch', 'loss', './results/episode/loss.png')
+        plot_min_max_figure(self.q_values_range_history['min'], self.q_values_range_history['max'], 'q_values', 'epoch', 'q_value', './results/episode/q_values.png')
+
+    def save_model(self, episode):
+        torch.save(self.target_network, f"./results/models/target_network_episode_{episode}.pth")
+        
+    def load_model(self, episode, epsilon):
+        self.epsilon = epsilon
+        self.target_network = torch.load(f"./results/models/target_network_episode_{episode}.pth")
+        self.q_network = torch.load(f"./results/models/target_network_episode_{episode}.pth")
+        
