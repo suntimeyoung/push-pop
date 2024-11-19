@@ -131,7 +131,7 @@ class GameGUI:
 
         tk.Label(
             self.agent_delay_frame,
-            text="Delay (s):",
+            text="Delay/s:",
             font=("JetBrains Mono", 9),
             bg="#2b2b2b",
             fg="#ffffff",
@@ -168,7 +168,7 @@ class GameGUI:
             state="disabled",
             yscrollcommand=self.scrollbar.set,
             wrap="none",
-            font=font.Font(family="JetBrains Mono", size=5),
+            font=font.Font(family="JetBrains Mono", size=6),
         )
         self.log_text.pack(side="left", fill="y", expand=True)
         # 绑定滚动条
@@ -266,7 +266,9 @@ class GameGUI:
         """
         显示游戏结束提示
         """
-        result = messagebox.askyesno("GAME OVER")
+        result = messagebox.askyesno(
+            title="GAME OVER", message="Would you like to try again?"
+        )
         if result:
             self.reset_game()
         else:
