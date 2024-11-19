@@ -4,8 +4,6 @@ from game.game import Game
 from dqn_agent import DQNAgent
 from utils.utils import *
 
-# nohup python -u training.py > ./results/training.log 2>&1 &
-
 action_num = ["a", "w", "s", "d"]
 game = Game()
 game.board_init_rand()
