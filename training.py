@@ -16,7 +16,7 @@ action_size = 4  # 上、下、左、右四个动作
 agent = DQNAgent(game.board_size, input_channels, action_size)
 agent.multi_channel_init(game.board_size, len(game.notion))
 # load trained model
-agent.load_model(140000, 0.05231380110081405)
+# agent.load_model(140000, 0.05231380110081405)
 episode_check = [[], [], []]
 
 test_reward = []
@@ -95,5 +95,5 @@ for episode in range(1000000):
         plot_figure(test_total_step, 'test total step', 'epoch(per 500)', 'step', './results/test/total_step.png')
         plot_figure(test_valid_step_ratio, 'test valid step ratio', 'epoch(per 500)', 'step', './results/test/valid_step_ratio.png')
     
-    if episode % 0000 == 0 and episode > 0:
+    if episode % 50000 == 0 and episode > 0:
         agent.save_model(episode)

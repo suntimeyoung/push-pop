@@ -4,8 +4,6 @@ from game.game import Game
 from dqn_agent import DQNAgent
 from utils.utils import *
 
-# nohup python -u training.py > ./results/training.log 2>&1 &
-
 action_num = ["a", "w", "s", "d"]
 game = Game()
 game.board_init_rand()
@@ -26,7 +24,7 @@ test_valid_step_ratio = []
 model_episode = 140000
 test_rounds = 10
 
-agent.load_model(model_episode, 0.01)
+agent.load_model_test(model_episode, 0.01)
 rand = True
 date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 print(f"[{date_str}]: start of testing...")

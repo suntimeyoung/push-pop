@@ -25,7 +25,7 @@ class ReplayBuffer:
 
 
 class DQNAgent:
-    def __init__(self, board_size, input_channels, action_size, gamma=0.98, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.01):
+    def __init__(self, board_size, input_channels, action_size, gamma=0.99, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.01):
         self.board_size = board_size
         self.action_size = action_size
         self.gamma = gamma
@@ -45,7 +45,7 @@ class DQNAgent:
         self.optimizer = optim.Adam(self.q_network.parameters(), lr=0.001)
         self.criterion = nn.MSELoss()
 
-        self.memory = ReplayBuffer(capacity=50000)
+        self.memory = ReplayBuffer(capacity=100000)
 
         self.q_values_range_history_epsilon = {'min':[], 'max': []}
         self.loss_history_epsilon = []
