@@ -1,4 +1,4 @@
-在以下代码的基础上，根据这个 agent 的交互方式，在 gui 中增加一个按钮表示暂停或启动 agent 进行游戏，同时显示 agent 的每一步操作，再增加一个时延选项，控制 agent 执行一次操作后等待的秒数，默认0.5s。
+在以下代码的基础上，根据这个 agent 的交互方式，在 gui 中增加一个按钮表示暂停或启动 agent 进行游戏，同时显示 agent 的每一步操作，再增加一个时延选项，控制 agent 执行一次操作后等待的秒数，默认 0.5s。
 
 agent 交互代码如下：
 
@@ -49,7 +49,7 @@ class GameGUI:
         self.score_label = tk.Label(
             self.info_frame,
             text="Score: 0",
-            font=("Helvetica", 7),
+            font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
         )
@@ -57,7 +57,7 @@ class GameGUI:
         self.step_label = tk.Label(
             self.info_frame,
             text="Step: 0",
-            font=("Helvetica", 7),
+            font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
         )
@@ -91,7 +91,7 @@ class GameGUI:
         self.reset_button = tk.Button(
             self.frame,
             text="Restart Game",
-            font=("Helvetica", 9),
+            font=("JetBrains Mono", 9),
             bg="#ff5722",
             fg="#ffffff",
             command=self.reset_game,
@@ -172,4 +172,3 @@ if __name__ == "__main__":
     root.mainloop()
 
 ```
-

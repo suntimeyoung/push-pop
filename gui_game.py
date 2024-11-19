@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import font
 from tkinter import messagebox
 from game.game import Game
 from dqn_agent import DQNAgent
@@ -50,7 +51,9 @@ class GameGUI:
         self.log_frame.pack(fill="both", expand=True)
 
         # 滚动条
-        self.scrollbar = tk.Scrollbar(self.log_frame, bg="#2b2b2b", troughcolor="#444444")
+        self.scrollbar = tk.Scrollbar(
+            self.log_frame, bg="#2b2b2b", troughcolor="#444444"
+        )
         self.scrollbar.pack(side="right", fill="y")
 
         # 分数与步数
@@ -60,7 +63,7 @@ class GameGUI:
         self.score_label = tk.Label(
             self.info_frame,
             text="Score: 0",
-            font=("Helvetica", 7),
+            font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
         )
@@ -68,7 +71,7 @@ class GameGUI:
         self.step_label = tk.Label(
             self.info_frame,
             text="Step: 0",
-            font=("Helvetica", 7),
+            font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
         )
@@ -76,7 +79,7 @@ class GameGUI:
 
         # 游戏网格
         self.grid_frame = tk.Frame(self.left_frame, bg="#2b2b2b")
-        self.grid_frame.pack(fill="both", expand=True)
+        self.grid_frame.pack(fill="both", expand=True, pady=10, padx=10)
         self.cells = []
         for row in range(self.board_size):
             row_cells = []
@@ -109,8 +112,8 @@ class GameGUI:
         self.reset_button = tk.Button(
             self.control_frame,
             text="Restart Game",
-            font=("Helvetica", 9),
-            bg="#ff5722",
+            font=("JetBrains Mono", 9),
+            bg="#616161",
             fg="#ffffff",
             command=self.reset_game,
         )
@@ -119,7 +122,7 @@ class GameGUI:
         self.toggle_button = tk.Button(
             self.agent_frame,
             text="Start Agent",
-            font=("Helvetica", 9),
+            font=("JetBrains Mono", 9),
             bg="#4caf50",
             fg="#ffffff",
             command=self.toggle_agent,
@@ -129,7 +132,7 @@ class GameGUI:
         tk.Label(
             self.agent_delay_frame,
             text="Delay (s):",
-            font=("Helvetica", 7),
+            font=("JetBrains Mono", 9),
             bg="#2b2b2b",
             fg="#ffffff",
         ).pack(padx=5)
@@ -143,6 +146,7 @@ class GameGUI:
             fg="#ffffff",
             troughcolor="#555555",
             command=self.update_delay,
+            length=150,
         )
         self.delay_slider.set(self.delay)
         self.delay_slider.pack(padx=5)
@@ -151,7 +155,7 @@ class GameGUI:
         tk.Label(
             self.log_frame,
             text="Agent Log",
-            font=("Helvetica", 9),
+            font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
         ).pack(pady=5)
@@ -164,6 +168,7 @@ class GameGUI:
             state="disabled",
             yscrollcommand=self.scrollbar.set,
             wrap="none",
+            font=font.Font(family="JetBrains Mono", size=5),
         )
         self.log_text.pack(side="left", fill="y", expand=True)
         # 绑定滚动条
@@ -219,9 +224,35 @@ class GameGUI:
 
     def handle_keypress(self, event):
         """
-        处理键盘输入
+        处理键盘输入，将上下左右映射为 awsd
         """
-        key = event.keysym.lower()
+        # 定义箭头键到 aws 键的映射
+        key_mapping = {
+            "Up": "w",
+            "Down": "s",
+            "Left": "a",
+            "Right": "d",
+            "8": "w",
+            "2": "s",
+            "4": "a",
+            "6": "d",
+        }
+
+        # 获取按键名称并转换
+        key = event.keysym
+
+        if key == "5":
+            self.toggle_agent()
+
+        if self.running:
+            # agent running, and the player movement is forbidden
+            return
+
+        if key in key_mapping:  # 如果是箭头键，映射到 awsd
+            key = key_mapping[key]
+
+        key = key.lower()  # 转为小写，确保一致性
+
         if key in ["a", "w", "s", "d"]:
             self.game.game_step(key)
             self.game.game_level()
@@ -247,6 +278,11 @@ class GameGUI:
         """
         self.game.game_reset()
         self.update_board()
+
+        # 清理日志
+        self.log_text.config(state="normal")  # 允许修改日志
+        self.log_text.delete("1.0", "end")  # 删除所有内容
+        self.log_text.config(state="disabled")  # 恢复只读状态
 
     def toggle_agent(self):
         """

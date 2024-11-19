@@ -4,7 +4,7 @@ import torch.optim as optim
 import numpy as np
 import random
 
-from Network.module import *
+from network.module import *
 from utils.utils import plot_figure, plot_min_max_figure
 
 
