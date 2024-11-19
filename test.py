@@ -24,7 +24,7 @@ test_valid_step_ratio = []
 model_episode = 140000
 test_rounds = 10
 
-agent.load_model(model_episode, 0.01)
+agent.load_model_test(model_episode, 0.01)
 rand = True
 date_str = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
 print(f"[{date_str}]: start of testing...")
