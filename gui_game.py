@@ -20,7 +20,9 @@ class GameGUI:
         self.action_num = ["a", "w", "s", "d"]
 
         self.history = []  # 保存历史记录，每个元素为 (board, score, step, log)
+        self.max_history_len = 80
         self.current_time_index = 0  # 当前历史位置
+        self.max_time_index = 0
 
         # 加载图片并调整大小
         self.image_size = 60  # 每个单元格图片的大小
@@ -201,6 +203,8 @@ class GameGUI:
         # 初始化网格显示
         self.update_board()
 
+        self.save_history()
+
     def update_board(self):
         """
         更新界面网格
@@ -254,25 +258,27 @@ class GameGUI:
             ],  # 玩家的移动历史
             "log": self.log_text.get("1.0", "end-1c"),  # 保存日志内容
         }
-        self.history = self.history[:self.current_time_index+1]
+        self.history = self.history[: self.current_time_index - max(0, self.max_time_index-self.max_history_len)]
         self.history.append(history_entry)
+        self.history = self.history[-self.max_history_len :]
+        self.current_time_index += 1
+        self.max_time_index = self.current_time_index
 
-        self.current_time_index = len(self.history)
         # 更新滚动条范围
         self.time_scroll.config(
-            from_=max(0, len(self.history) - 51), to=len(self.history) - 1
+            from_=max(0, self.max_time_index - self.max_history_len),
+            to=self.max_time_index - 1,
         )
-        self.time_scroll.set(len(self.history)-1)
+        self.time_scroll.set(self.max_time_index - 1)
 
     def restore_history(self, index):
         """
         恢复历史记录中的游戏状态
         """
-        if index < 0 or index >= len(self.history):
+        if index < max(0, self.max_time_index-self.max_history_len) or index > self.max_time_index-1:
             return
-
-        self.current_time_index = index
-        history_entry = self.history[index]
+        self.current_time_index = index + 1
+        history_entry = self.history[index - max(0, self.max_time_index-min(len(self.history), self.max_history_len))]
 
         # 恢复游戏状态
         self.game.board = [row[:] for row in history_entry["board"]]
@@ -299,6 +305,8 @@ class GameGUI:
         """
         滚动条更新历史状态
         """
+        if self.running:
+            return
         index = int(value)
         self.restore_history(index)
 
@@ -372,8 +380,9 @@ class GameGUI:
 
         # 清理历史记录和日志
         self.history = []
+        self.max_time_index = 0
         self.current_time_index = 0
-        self.time_scroll.config(to=0)
+        self.time_scroll.config(from_=0, to=0)
         self.time_scroll.set(0)
 
         # 清理日志
