@@ -25,7 +25,7 @@ class ReplayBuffer:
 
 
 class DQNAgent:
-    def __init__(self, board_size, input_channels, action_size, gamma=0.99, epsilon=1.0, epsilon_decay=0.9999, epsilon_min=0.01):
+    def __init__(self, board_size, input_channels, action_size, gamma=0.97, epsilon=1.0, epsilon_decay=0.9998, epsilon_min=0.01):
         self.board_size = board_size
         self.action_size = action_size
         self.gamma = gamma
@@ -36,6 +36,7 @@ class DQNAgent:
             self.device = torch.device('cuda:3')
         else:
             self.device = torch.device('cuda:0')
+        # self.device = torch.device('cpu')
 
         self.q_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)
         self.target_network = QNetwork_5CNN(board_size, input_channels, action_size).to(self.device)

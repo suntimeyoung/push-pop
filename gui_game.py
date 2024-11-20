@@ -19,6 +19,9 @@ class GameGUI:
         self.board_size = self.game.board_size
         self.action_num = ["a", "w", "s", "d"]
 
+        self.history = []  # 保存历史记录，每个元素为 (board, score, step, log)
+        self.current_time_index = 0  # 当前历史位置
+
         # 加载图片并调整大小
         self.image_size = 60  # 每个单元格图片的大小
         self.images = [
@@ -29,7 +32,7 @@ class GameGUI:
         # DQN Agent 初始化
         self.agent = DQNAgent(self.game.board_size, input_channels=7, action_size=4)
         self.agent.multi_channel_init(self.game.board_size, len(self.game.notion))
-        self.agent.load_model_test(140000, 0.05)
+        self.agent.load_model_test(200000, 0.05)
 
         # 状态
         self.running = False
@@ -56,6 +59,23 @@ class GameGUI:
             self.log_frame, bg="#2b2b2b", troughcolor="#444444"
         )
         self.scrollbar.pack(side="right", fill="y")
+
+        # 滚动条与时间回溯
+
+        self.time_scroll = tk.Scale(
+            self.right_frame,
+            from_=0,
+            to=0,
+            resolution=1,
+            orient="horizontal",
+            bg="#2b2b2b",
+            fg="#ffffff",
+            troughcolor="#555555",
+            highlightthickness=0,  # 去除高亮边框
+            command=self.update_time,
+            length=150,
+        )
+        self.time_scroll.pack(side="left", fill="x", expand=True, pady=10)
 
         # 分数与步数
         self.info_frame = tk.Frame(self.left_frame, bg="#2b2b2b")
@@ -155,7 +175,7 @@ class GameGUI:
         # 操作日志框 (在右侧)
         tk.Label(
             self.log_frame,
-            text="Agent Log",
+            text="Log",
             font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
@@ -206,16 +226,81 @@ class GameGUI:
         self.score_label.config(text=f"Score: {self.game.score}")
         self.step_label.config(text=f"Step: {self.game.step}")
 
-    def log_action(self, action):
+    def log_action(self, action, role):
         """
-        记录 Agent 的操作
+        记录操作
         """
         self.log_text.config(state="normal")
-        message = f"[Step-{self.game.step}]: action {action}\n"
+        message = f"[{self.game.step}]: {role} {action}\n"
         self.log_text.config(width=max(self.log_text.cget("width"), len(message)))
         self.log_text.insert("end", message)
         self.log_text.see("end")
         self.log_text.config(state="disabled")
+
+    def save_history(self):
+        """
+        保存当前游戏状态到历史记录
+        """
+        # 深拷贝当前状态
+        history_entry = {
+            "board": [row[:] for row in self.game.board],  # 保存棋盘状态
+            "score": self.game.score,  # 游戏得分
+            "step": self.game.step,  # 当前步数
+            "last_status": self.game.last_status[:],  # 上一步得分与步数
+            "valid_step": self.game.valid_step,  # 当前步是否有效
+            "player_position": self.game.player_position[:],  # 玩家的位置
+            "player_move_history": [
+                moves[:] for moves in self.game.player_move_history
+            ],  # 玩家的移动历史
+            "log": self.log_text.get("1.0", "end-1c"),  # 保存日志内容
+        }
+        self.history = self.history[:self.current_time_index+1]
+        self.history.append(history_entry)
+
+        self.current_time_index = len(self.history)
+        # 更新滚动条范围
+        self.time_scroll.config(
+            from_=max(0, len(self.history) - 51), to=len(self.history) - 1
+        )
+        self.time_scroll.set(len(self.history)-1)
+
+    def restore_history(self, index):
+        """
+        恢复历史记录中的游戏状态
+        """
+        if index < 0 or index >= len(self.history):
+            return
+
+        self.current_time_index = index
+        history_entry = self.history[index]
+
+        # 恢复游戏状态
+        self.game.board = [row[:] for row in history_entry["board"]]
+        self.game.score = history_entry["score"]
+        self.game.step = history_entry["step"]
+        self.game.last_status = history_entry["last_status"][:]
+        self.game.valid_step = history_entry["valid_step"]
+        self.game.player_position = history_entry["player_position"][:]
+        self.game.player_move_history = [
+            moves[:] for moves in history_entry["player_move_history"]
+        ]
+
+        # 更新界面显示
+        self.update_board()
+
+        # 恢复日志显示
+        self.log_text.config(state="normal")
+        self.log_text.delete("1.0", "end")
+        self.log_text.insert("1.0", history_entry["log"])
+        self.log_text.see("end")
+        self.log_text.config(state="disabled")
+
+    def update_time(self, value):
+        """
+        滚动条更新历史状态
+        """
+        index = int(value)
+        self.restore_history(index)
 
     def update_delay(self, value):
         """
@@ -256,8 +341,10 @@ class GameGUI:
 
         if key in ["a", "w", "s", "d"]:
             self.game.game_step(key)
+            self.log_action(key, "player")
             self.game.game_level()
             self.update_board()
+            self.save_history()
 
             # 检查游戏状态
             if self.game.game_status() == "over":
@@ -268,10 +355,11 @@ class GameGUI:
         显示游戏结束提示
         """
         result = messagebox.askyesno(
-            title="GAME OVER", message="Would you like to try again?"
+            title="GAME OVER", message="Would you like to continue?"
         )
         if result:
-            self.reset_game()
+            self.running = False
+            self.toggle_button.config(text="Start Agent", bg="#4caf50")
         else:
             self.root.destroy()
 
@@ -281,6 +369,12 @@ class GameGUI:
         """
         self.game.game_reset()
         self.update_board()
+
+        # 清理历史记录和日志
+        self.history = []
+        self.current_time_index = 0
+        self.time_scroll.config(to=0)
+        self.time_scroll.set(0)
 
         # 清理日志
         self.log_text.config(state="normal")  # 允许修改日志
@@ -307,8 +401,9 @@ class GameGUI:
             action = self.agent.select_action_test(state)
             self.game.game_step(self.action_num[int(action)])
             self.game.game_level()
-            self.log_action(self.action_num[int(action)])
+            self.log_action(self.action_num[int(action)], 'agent')
             self.update_board()
+            self.save_history()
             if self.game.game_status() == "over":
                 self.show_game_over()
                 break

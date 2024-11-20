@@ -113,8 +113,6 @@ class Game:
             return
         if self.step % 50 == 0:
             self.board_generate_award('all')
-        elif self.step % 30 == 0:
-            self.board_generate_hard_block()
 
     def game_step(self, direction):
         self.player_move(direction)
@@ -122,6 +120,8 @@ class Game:
             return
         if self.step & 1 == 1:
             self.board_generate_easy_block()
+        if self.step % 30 == 0:
+            self.board_generate_hard_block()
         self.board_check()
         self.board_check_all_clear()
 
@@ -294,7 +294,7 @@ class Game:
                         self.board[row][index] = 3
                     case 2:
                         self.board[row][index] = 4
-                        
+
     def board_check_all_clear(self):
         """
         判断整个棋盘是否清空，若清空则大量加分
@@ -305,7 +305,7 @@ class Game:
                 if self.board[row][col] in [1, 2]:
                     check_all_clear = False
         if check_all_clear:
-            self.score += 15
+            self.score += 5
 
     def board_generate_easy_block(self, block_type=1):
         if len(self.player_move_history[2]) > 0:
@@ -346,7 +346,7 @@ class Game:
 
     def board_generate_award(self, award_type):
         match award_type:
-            case 'all':
+            case "all":
                 for row in range(self.board_size):
                     for col in range(self.board_size):
                         if self.board[row][col] == 0:
