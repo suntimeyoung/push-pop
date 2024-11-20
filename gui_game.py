@@ -32,7 +32,7 @@ class GameGUI:
         # DQN Agent 初始化
         self.agent = DQNAgent(self.game.board_size, input_channels=7, action_size=4)
         self.agent.multi_channel_init(self.game.board_size, len(self.game.notion))
-        self.agent.load_model_test(140000, 0.05)
+        self.agent.load_model_test(200000, 0.05)
 
         # 状态
         self.running = False
@@ -175,7 +175,7 @@ class GameGUI:
         # 操作日志框 (在右侧)
         tk.Label(
             self.log_frame,
-            text="Agent Log",
+            text="Log",
             font=("JetBrains Mono", 7),
             bg="#2b2b2b",
             fg="#ffffff",
@@ -358,7 +358,8 @@ class GameGUI:
             title="GAME OVER", message="Would you like to continue?"
         )
         if result:
-            pass
+            self.running = False
+            self.toggle_button.config(text="Start Agent", bg="#4caf50")
         else:
             self.root.destroy()
 
