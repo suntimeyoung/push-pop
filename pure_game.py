@@ -200,16 +200,10 @@ class GameGUI:
         message = f"[{self.game.step}]: {role} {action}\n"
         self.log_text.config(width=max(self.log_text.cget("width"), len(message)))
         self.log_text.insert("end", message)
+        if int(self.log_text.index("end-1c").split(".")[0]) > 200:
+            self.log_text.delete("1.0", "2.0")  # 删除最早的第1行
         self.log_text.see("end")
         self.log_text.config(state="disabled")
-
-    def get_last_200_lines(self):
-        """
-        获取日志中的最后 200 行内容
-        """
-        all_lines = self.log_text.get("1.0", "end-1c").splitlines()
-        last_200_lines = all_lines[-200:]  # 保留最后 200 行
-        return "\n".join(last_200_lines)
 
     def save_history(self):
         """
@@ -226,7 +220,7 @@ class GameGUI:
             "player_move_history": [
                 moves[:] for moves in self.game.player_move_history
             ],  # 玩家的移动历史
-            "log": self.get_last_200_lines(),  # 保存日志内容
+            "log": self.log_text.get("1.0", "end-1c"),  # 保存日志内容
         }
         self.history = self.history[: self.current_time_index - max(0, self.max_time_index-self.max_history_len)]
         self.history.append(history_entry)
