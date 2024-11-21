@@ -34,7 +34,7 @@ class GameGUI:
         # DQN Agent 初始化
         self.agent = DQNAgent(self.game.board_size, input_channels=7, action_size=4)
         self.agent.multi_channel_init(self.game.board_size, len(self.game.notion))
-        self.agent.load_model_test(200000, 0.05)
+        self.agent.load_model_test(300000, 0.05)
 
         # 状态
         self.running = False
